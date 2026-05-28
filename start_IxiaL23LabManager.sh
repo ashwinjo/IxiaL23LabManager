@@ -18,13 +18,14 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 die()   { err "$*"; exit 1; }
 
-PORTS=(3000 3001 5174 8675 3005 8080 "${IXIA_SHELL_PORT}")
+PORTS=(3000 3001 5174 8675 8080 "${IXIA_SHELL_PORT}")
+# PORTS=(3000 3001 5174 8675 3005 8080 "${IXIA_SHELL_PORT}")  # 3005 removed (IxOSMonitoring disabled)
 
 REPOS=(
   "ixiaInventoryExplorer|https://github.com/ashwinjo/ixiaInventoryExplorer.git"
   "IxNetworkSessionExplorer|https://github.com/ashwinjo/IxNetworkSessionExplorer.git"
   "IxPortUtilizationAuditor|https://github.com/ashwinjo/IxPortUtilizationAuditor.git"
-  "IxOSMonitoring|https://github.com/Keysight/IxOSMonitoring.git"
+  # "IxOSMonitoring|https://github.com/Keysight/IxOSMonitoring.git"
 )
 
 for arg in "$@"; do
@@ -189,32 +190,32 @@ start_t3() {
       warn "Remapping T3: host 8675 -> container 8890"
       (cd "$dir" && sed 's/"8890:8890"/"8675:8890"/' docker-compose.yml > /tmp/ixport-compose.yml && \
         API_PORT=8675 $COMPOSE -f /tmp/ixport-compose.yml up -d --build) || \
-        (cd "$dir" && API_PORT=8675 ./start.sh &)
+        (cd "$dir" && API_PORT=8675 $COMPOSE up -d --build)
     fi
   fi
   wait_health "http://127.0.0.1:8675/" "T3" 120 || true
 }
 
-start_t4() {
-  local dir="${IXIA_TOOLS_DIR}/IxOSMonitoring"
-  [[ -d "$dir" ]] || die "Missing ${dir}"
-  info "Starting IxOSMonitoring..."
-  if curl -sf --max-time 2 "http://127.0.0.1:3005/api/health" >/dev/null 2>&1; then
-    ok "T4 already healthy"
-    return 0
-  fi
-  if [[ -x "${dir}/startup.sh" ]]; then
-    (cd "$dir" && ./startup.sh) || true
-  elif [[ -f "${dir}/start.sh" ]]; then
-    (cd "$dir" && ./start.sh) || true
-  elif [[ -f "${dir}/docker-compose.yml" ]]; then
-    (cd "$dir" && $COMPOSE up -d) || true
-  else
-    warn "No startup script for IxOSMonitoring — start manually on port 3005"
-    return 0
-  fi
-  wait_health "http://127.0.0.1:3005/api/health" "T4 Grafana" 180 || true
-}
+# start_t4() {
+#   local dir="${IXIA_TOOLS_DIR}/IxOSMonitoring"
+#   [[ -d "$dir" ]] || die "Missing ${dir}"
+#   info "Starting IxOSMonitoring..."
+#   if curl -sf --max-time 2 "http://127.0.0.1:3005/api/health" >/dev/null 2>&1; then
+#     ok "T4 already healthy"
+#     return 0
+#   fi
+#   if [[ -x "${dir}/startup.sh" ]]; then
+#     (cd "$dir" && ./startup.sh) || true
+#   elif [[ -f "${dir}/start.sh" ]]; then
+#     (cd "$dir" && ./start.sh) || true
+#   elif [[ -f "${dir}/docker-compose.yml" ]]; then
+#     (cd "$dir" && $COMPOSE up -d) || true
+#   else
+#     warn "No startup script for IxOSMonitoring — start manually on port 3005"
+#     return 0
+#   fi
+#   wait_health "http://127.0.0.1:3005/api/health" "T4 Grafana" 180 || true
+# }
 
 start_shell() {
   if [[ -f "${SHELL_PID_FILE}" ]] && kill -0 "$(cat "${SHELL_PID_FILE}")" 2>/dev/null; then
@@ -244,15 +245,26 @@ main() {
   start_t1
   start_t2
   start_t3
-  start_t4
+  # start_t4
   start_shell
   echo ""
   echo -e "${GREEN}${BOLD}IxiaL23LabManager running at http://localhost:${IXIA_SHELL_PORT}${NC}"
   echo ""
-  echo "  Tool 1 UI:  http://localhost:5174"
-  echo "  Tool 2 UI:  http://localhost:3000"
-  echo "  Tool 3 UI:  http://localhost:8675"
-  echo "  Tool 4 UI:  http://localhost:3005"
+  echo -e "${BOLD}  T1 — IxiaInventoryExplorer${NC}"
+  echo "    UI:       http://localhost:5174"
+  echo "    Backend:  http://localhost:3001"
+  echo ""
+  echo -e "${BOLD}  T2 — IxNetworkSessionsExplorer${NC}"
+  echo "    UI:       http://localhost:3000"
+  echo "    Backend:  http://localhost:8080"
+  echo ""
+  echo -e "${BOLD}  T3 — IxPortUtilizationAuditor${NC}"
+  echo "    UI:       http://localhost:8675"
+  echo "    Backend:  http://localhost:8675"
+  echo ""
+  # echo -e "${BOLD}  T4 — IxOSMonitoring${NC}"
+  # echo "    UI:       http://localhost:3005"
+  # echo "    Backend:  http://localhost:3005"
 }
 
 main "$@"
