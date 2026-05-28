@@ -1,0 +1,85 @@
+.app-header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.header-brand strong {
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.health-indicators {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.health-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.health-chip:hover {
+  border-color: var(--accent);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.green {
+  background: var(--green);
+}
+
+.dot.yellow {
+  background: var(--yellow);
+}
+
+.dot.red {
+  background: var(--red);
+}
+
+.chip-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chip-time {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.refresh-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

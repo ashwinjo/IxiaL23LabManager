@@ -1,0 +1,40 @@
+---
+description: IxiaL23LabManager product context from docs/prd.md — read before any implementation
+alwaysApply: true
+---
+
+# IxiaL23LabManager — Project Context
+
+**Source of truth:** `docs/prd.md` + `docs/architecture.md`
+
+## What we're building
+
+Open-source **unified lab management shell** for Ixia/Keysight L2–L3 labs. Single URL (`localhost:9000`) React app that bootstraps four existing tools, embeds them via iframes, shows live health, and provides unified chassis config (manual + CSV bulk).
+
+## Four tools (UI + backend)
+
+| Tool | UI (iframe) | Backend / API | Notes |
+|------|-------------|---------------|-------|
+| IxiaInventoryExplorer (T1) | 5174 | 3001 | Separate frontend + backend |
+| IxNetworkSessionsExplorer (T2) | 3000 | 8080 | Separate frontend + backend |
+| IxPortUtilizationAuditor (T3) | 8675 | 8675 | Single Docker container (combined) |
+| IxOSMonitoring / Grafana (T4) | 3005 | 3005 | Grafana |
+
+Config/health API calls for T1/T2 hit backend ports (3001, 8080). Shell on **9000** (`IXIA_SHELL_PORT`).
+
+## Core deliverables
+
+1. **`start_IxiaL23LabManager.sh`** — Docker preflight, port check, clone tools, start each tool (T1 via `docker-rebuild.sh`), start shell on 9000.
+2. **React shell (`shell/`)** — Sidebar, iframe viewport, health header (30s poll), Config view.
+3. **Config** — Manual + CSV bulk for T1/T2; never persist passwords in shell storage.
+4. **`stop_IxiaL23LabManager.sh`** — Graceful teardown.
+
+## v1 user stories
+
+1. Bootstrap full stack
+2. Sidebar navigation + pop-out
+3. Live service health header
+4. Manual chassis config (T1/T2)
+5. Bulk CSV chassis config
+
+When implementing, match PRD acceptance criteria; see `docs/architecture.md` for API contracts.

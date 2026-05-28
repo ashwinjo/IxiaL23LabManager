@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.shell.pid
+shell.log
+tools/
+.env
+.DS_Store
