@@ -179,19 +179,8 @@ start_t3() {
     ok "T3 already running"
     return 0
   fi
-  export API_PORT=8675
-  export INVENTORY_EXPLORER_URL="${INVENTORY_EXPLORER_URL:-http://host.docker.internal:3001}"
-  export SESSION_EXPLORER_URL="${SESSION_EXPLORER_URL:-http://host.docker.internal:8080}"
   if [[ -f "${dir}/docker-compose.yml" ]]; then
-  (cd "$dir" && API_PORT=8675 $COMPOSE -f docker-compose.yml up -d --build 2>/dev/null) || true
-  fi
-  if ! curl -sf --max-time 2 "http://127.0.0.1:8675/" >/dev/null 2>&1; then
-    if [[ -x "${dir}/start.sh" ]]; then
-      warn "Remapping T3: host 8675 -> container 8890"
-      (cd "$dir" && sed 's/"8890:8890"/"8675:8890"/' docker-compose.yml > /tmp/ixport-compose.yml && \
-        API_PORT=8675 $COMPOSE -f /tmp/ixport-compose.yml up -d --build) || \
-        (cd "$dir" && API_PORT=8675 $COMPOSE up -d --build)
-    fi
+    (cd "$dir" && $COMPOSE -f docker-compose.yml up -d --build 2>/dev/null) || true
   fi
   wait_health "http://127.0.0.1:8675/" "T3" 120 || true
 }
@@ -227,7 +216,7 @@ start_shell() {
     die "npm not found. Install Node.js 18+ and retry."
   fi
   (cd "${SHELL_DIR}" && npm install --silent)
-  (cd "${SHELL_DIR}" && IXIA_SHELL_PORT="${IXIA_SHELL_PORT}" nohup npm run dev > "${SCRIPT_DIR}/shell.log" 2>&1 &)
+  (cd "${SHELL_DIR}" && IXIA_SHELL_PORT="${IXIA_SHELL_PORT}" nohup npm run dev > "${SCRIPT_DIR}/shell.log" 2>&1) &
   echo $! > "${SHELL_PID_FILE}"
   sleep 3
   if curl -sf --max-time 5 "http://127.0.0.1:${IXIA_SHELL_PORT}/" >/dev/null 2>&1; then

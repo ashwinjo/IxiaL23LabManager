@@ -32,15 +32,6 @@ export const TOOLS = [
     healthUrl: `http://${host}:8675/`,
     popOutPort: 8675,
   },
-  {
-    id: 't4',
-    name: 'IxOSMonitoring',
-    shortName: 'Monitoring',
-    uiUrl: `http://${host}:3005`,
-    backendUrl: `http://${host}:3005`,
-    healthUrl: `http://${host}:3005/api/health`,
-    popOutPort: 3005,
-  },
 ]
 
 export const NAV_ITEMS = [

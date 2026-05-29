@@ -9,10 +9,12 @@ export default defineConfig({
     port: shellPort,
     strictPort: true,
     host: true,
+    allowedHosts: true,
   },
   preview: {
     port: shellPort,
     strictPort: true,
     host: true,
+    allowedHosts: true,
   },
 })
