@@ -1,19 +1,4 @@
-:root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --border: #30363d;
-  --text: #e6edf3;
-  --muted: #8b949e;
-  --accent: #58a6ff;
-  --green: #3fb950;
-  --yellow: #d29922;
-  --red: #f85149;
-  --sidebar-width: 220px;
-  --header-height: 52px;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  color: var(--text);
-  background: var(--bg);
-}
+@import './styles/keysight-theme.css';
 
 * {
   box-sizing: border-box;
@@ -22,6 +7,10 @@
 body {
   margin: 0;
   min-height: 100vh;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text);
+  background: var(--bg);
 }
 
 #root {
@@ -57,4 +46,52 @@ textarea {
   display: flex;
   flex-direction: column;
   background: var(--bg);
+}
+
+/* Shared button primitives */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    background var(--ease),
+    border-color var(--ease),
+    box-shadow var(--ease),
+    opacity var(--ease);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--cyan-dim);
+  border-color: var(--border-bright);
+  color: var(--cyan);
+}
+
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.btn-neutral {
+  background: transparent;
+  border-color: var(--border-med);
+  color: var(--text-muted);
+}
+
+.btn-neutral:hover:not(:disabled) {
+  background: var(--surface-raised);
+  border-color: var(--border-bright);
+  color: var(--text);
 }

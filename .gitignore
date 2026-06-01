@@ -2,6 +2,10 @@ node_modules/
 dist/
 .shell.pid
 shell.log
+lab-assistant/.venv/
+lab-assistant/.brian.pid
+lab-assistant/brian.log
+lab-assistant/.env
 tools/
 .env
 .DS_Store

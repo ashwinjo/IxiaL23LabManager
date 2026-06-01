@@ -6,7 +6,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHELL_DIR="${SCRIPT_DIR}/shell"
 IXIA_TOOLS_DIR="${IXIA_TOOLS_DIR:-${SCRIPT_DIR}/../tools}"
 IXIA_SHELL_PORT="${IXIA_SHELL_PORT:-9000}"
+BRIAN_PORT="${BRIAN_PORT:-9010}"
 SHELL_PID_FILE="${SCRIPT_DIR}/.shell.pid"
+LAB_ASSISTANT_DIR="${SCRIPT_DIR}/lab-assistant"
 UPDATE=false
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
@@ -18,13 +20,14 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 die()   { err "$*"; exit 1; }
 
-PORTS=(3000 3001 5174 8675 8080 "${IXIA_SHELL_PORT}")
-# PORTS=(3000 3001 5174 8675 3005 8080 "${IXIA_SHELL_PORT}")  # 3005 removed (IxOSMonitoring disabled)
+PORTS=(3000 3001 5174 8675 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")
+# PORTS=(3000 3001 5174 8675 3005 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")  # 3005 removed
 
 REPOS=(
   "ixiaInventoryExplorer|https://github.com/ashwinjo/ixiaInventoryExplorer.git"
   "IxNetworkSessionExplorer|https://github.com/ashwinjo/IxNetworkSessionExplorer.git"
   "IxPortUtilizationAuditor|https://github.com/ashwinjo/IxPortUtilizationAuditor.git"
+  "ixia-inventory-management-mcp|https://github.com/ashwinjo/ixia-inventory-management-mcp.git"
   # "IxOSMonitoring|https://github.com/Keysight/IxOSMonitoring.git"
 )
 
@@ -35,6 +38,7 @@ for arg in "$@"; do
       echo "Usage: $0 [--update]"
       echo "  IXIA_TOOLS_DIR   Clone location (default: ../tools)"
       echo "  IXIA_SHELL_PORT  Shell port (default: 9000)"
+      echo "  BRIAN_PORT       Brian backend port (default: 9010)"
       exit 0
       ;;
     *) die "Unknown option: $arg" ;;
@@ -185,6 +189,38 @@ start_t3() {
   wait_health "http://127.0.0.1:8675/" "T3" 120 || true
 }
 
+start_t1_mcp() {
+  local dir="${IXIA_TOOLS_DIR}/ixia-inventory-management-mcp"
+  [[ -d "$dir" ]] || { warn "T1 MCP repo missing — clone ixia-inventory-management-mcp"; return 0; }
+  info "Starting T1 Inventory MCP (port 8888)..."
+  if curl -sf --max-time 2 "http://127.0.0.1:8888/docs" >/dev/null 2>&1; then
+    ok "T1 MCP already running"
+    return 0
+  fi
+  if [[ ! -f "${dir}/config.json" ]]; then
+    warn "T1 MCP config.json missing in ${dir} — create it with chassis credentials before using inventory tools"
+  fi
+  if [[ -f "${dir}/docker-compose.yml" ]]; then
+    (cd "$dir" && $COMPOSE up -d --build 2>/dev/null) || (cd "$dir" && $COMPOSE up -d)
+  else
+    warn "No docker-compose.yml in T1 MCP repo — start manually on port 8888"
+    return 0
+  fi
+  wait_health "http://127.0.0.1:8888/docs" "T1 MCP" 120 || true
+}
+
+start_brian() {
+  [[ -d "${LAB_ASSISTANT_DIR}" ]] || die "Missing ${LAB_ASSISTANT_DIR}"
+  info "Starting Brian (LabAssistant) on port ${BRIAN_PORT}..."
+  if curl -sf --max-time 2 "http://127.0.0.1:${BRIAN_PORT}/health" >/dev/null 2>&1; then
+    ok "Brian already healthy"
+    return 0
+  fi
+  chmod +x "${LAB_ASSISTANT_DIR}/start.sh" 2>/dev/null || true
+  (cd "${LAB_ASSISTANT_DIR}" && BRIAN_PORT="${BRIAN_PORT}" ./start.sh) || warn "Brian start.sh failed — see lab-assistant/brian.log"
+  wait_health "http://127.0.0.1:${BRIAN_PORT}/health" "Brian" 60 || true
+}
+
 # start_t4() {
 #   local dir="${IXIA_TOOLS_DIR}/IxOSMonitoring"
 #   [[ -d "$dir" ]] || die "Missing ${dir}"
@@ -232,9 +268,11 @@ main() {
   check_ports
   clone_repos
   start_t1
+  start_t1_mcp
   start_t2
   start_t3
   # start_t4
+  start_brian
   start_shell
   echo ""
   echo -e "${GREEN}${BOLD}IxiaL23LabManager running at http://localhost:${IXIA_SHELL_PORT}${NC}"
@@ -250,6 +288,18 @@ main() {
   echo -e "${BOLD}  T3 — IxPortUtilizationAuditor${NC}"
   echo "    UI:       http://localhost:8675"
   echo "    Backend:  http://localhost:8675"
+  echo ""
+  echo -e "${BOLD}  MCP — Inventory (T1)${NC}"
+  echo "    MCP:      http://localhost:8888/mcp"
+  echo "    Health:   http://localhost:8888/docs"
+  echo ""
+  echo -e "${BOLD}  MCP — Sessions (T2, via start.sh)${NC}"
+  echo "    MCP:      http://localhost:8889/mcp"
+  echo ""
+  echo -e "${BOLD}  Brian — LabAssistant${NC}"
+  echo "    Shell UI: http://localhost:${IXIA_SHELL_PORT} → Brian (LabAssistant)"
+  echo "    API:      http://localhost:${BRIAN_PORT}"
+  echo "    Set OPENAI_API_KEY in lab-assistant/.env for chat"
   echo ""
   # echo -e "${BOLD}  T4 — IxOSMonitoring${NC}"
   # echo "    UI:       http://localhost:3005"

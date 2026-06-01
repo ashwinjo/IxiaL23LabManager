@@ -1,0 +1,20 @@
+{
+  "servers": [
+    {
+      "id": "t1-mcp",
+      "name": "Inventory MCP",
+      "toolId": "t1",
+      "url": "http://127.0.0.1:8888/mcp",
+      "healthUrl": "http://127.0.0.1:8888/docs",
+      "enabled": true
+    },
+    {
+      "id": "t2-mcp",
+      "name": "Sessions MCP",
+      "toolId": "t2",
+      "url": "http://127.0.0.1:8889/mcp",
+      "healthUrl": "http://127.0.0.1:8889/",
+      "enabled": true
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
 
 export const SHELL_PORT = 9000
+export const BRIAN_PORT = 9010
 
 export const TOOLS = [
   {
@@ -34,11 +35,24 @@ export const TOOLS = [
   },
 ]
 
+export const BRIAN = {
+  id: 'brian',
+  name: 'Brian (LabAssistant)',
+  shortName: 'Brian',
+  backendUrl: `http://${host}:${BRIAN_PORT}`,
+  healthUrl: `http://${host}:${BRIAN_PORT}/health`,
+}
+
 export const NAV_ITEMS = [
   { id: 'home', label: 'Home / Config', type: 'config' },
   ...TOOLS.map((t) => ({ id: t.id, label: t.shortName, type: 'tool', tool: t })),
+  { id: BRIAN.id, label: BRIAN.name, type: 'assistant' },
 ]
 
 export function getToolById(id) {
   return TOOLS.find((t) => t.id === id)
+}
+
+export function isBrian(id) {
+  return id === BRIAN.id
 }

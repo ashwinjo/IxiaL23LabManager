@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IXIA_TOOLS_DIR="${IXIA_TOOLS_DIR:-${SCRIPT_DIR}/../tools}"
 SHELL_PID_FILE="${SCRIPT_DIR}/.shell.pid"
+BRIAN_PID_FILE="${SCRIPT_DIR}/lab-assistant/.brian.pid"
 
 CYAN='\033[0;36m'; GREEN='\033[0;32m'; NC='\033[0m'
 info() { echo -e "${CYAN}[INFO]${NC} $*"; }
@@ -30,6 +31,18 @@ stop_shell() {
   pkill -f "vite.*IxiaL23LabManager/shell" 2>/dev/null || true
 }
 
+stop_brian() {
+  if [[ -f "${BRIAN_PID_FILE}" ]]; then
+    local pid
+    pid="$(cat "${BRIAN_PID_FILE}")"
+    if kill -0 "$pid" 2>/dev/null; then
+      kill "$pid" 2>/dev/null || true
+      ok "Stopped Brian (pid ${pid})"
+    fi
+    rm -f "${BRIAN_PID_FILE}"
+  fi
+}
+
 stop_tool() {
   local dir=$1
   local compose_file=${2:-docker-compose.yml}
@@ -43,6 +56,8 @@ stop_tool() {
 main() {
   info "Stopping IxiaL23LabManager stack..."
   stop_shell
+  stop_brian
+  stop_tool "${IXIA_TOOLS_DIR}/ixia-inventory-management-mcp"
   stop_tool "${IXIA_TOOLS_DIR}/ixiaInventoryExplorer" "docker-compose.separate.yml"
   stop_tool "${IXIA_TOOLS_DIR}/IxNetworkSessionExplorer"
   stop_tool "${IXIA_TOOLS_DIR}/IxPortUtilizationAuditor"

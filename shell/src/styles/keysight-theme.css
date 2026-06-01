@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Surfaces */
+  --bg: #04060d;
+  --surface: #080c15;
+  --surface-alt: #0c1120;
+  --surface-raised: #111827;
+  --surface-hover: #141d2e;
+
+  /* Borders */
+  --border: #161f30;
+  --border-med: #1e2d42;
+  --border-bright: #2a3f5c;
+  --border-focus: rgba(0, 200, 232, 0.5);
+
+  /* Text */
+  --text: #e2eaf4;
+  --text-muted: #8da8c0;
+  --text-dim: #4a6478;
+  --text-xdim: #1e3040;
+
+  /* Accent */
+  --cyan: #00c8e8;
+  --cyan-dim: rgba(0, 200, 232, 0.08);
+  --cyan-glow: rgba(0, 200, 232, 0.2);
+  --cyan-hover: #22d4f0;
+
+  /* Status */
+  --green: #00e676;
+  --green-dim: rgba(0, 230, 118, 0.08);
+  --green-border: rgba(0, 230, 118, 0.25);
+
+  --amber: #f59e0b;
+  --amber-dim: rgba(245, 158, 11, 0.08);
+  --amber-border: rgba(245, 158, 11, 0.3);
+
+  --crimson: #f43f5e;
+  --crimson-dim: rgba(244, 63, 94, 0.08);
+  --crimson-hover: #fb5573;
+
+  /* Typography */
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Geometry */
+  --radius-sm: 3px;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Motion */
+  --ease: 150ms ease;
+  --ease-med: 220ms ease;
+  --ease-spring: 250ms cubic-bezier(0.34, 1.3, 0.64, 1);
+
+  /* Toast */
+  --toast-ok-text: rgba(0, 230, 118, 0.85);
+  --toast-error-text: rgba(255, 130, 150, 0.9);
+
+  /* Layout */
+  --sidebar-width: 240px;
+  --header-height: 56px;
+
+  /* Legacy aliases (prefer semantic tokens in new CSS) */
+  --muted: var(--text-muted);
+  --accent: var(--cyan);
+  --red: var(--crimson);
+  --yellow: var(--amber);
+}
+
+body[data-theme='day'] {
+  color-scheme: light;
+
+  --bg: #f4f2f7;
+  --surface: #ffffff;
+  --surface-alt: #ede9f4;
+  --surface-raised: #e4e0ee;
+  --surface-hover: #e9e5f2;
+
+  --border: #d5d0e0;
+  --border-med: #bdb8cc;
+  --border-bright: #9a94ad;
+  --border-focus: rgba(233, 0, 41, 0.5);
+
+  --text: #1a1528;
+  --text-muted: #524f56;
+  --text-dim: #7b768a;
+  --text-xdim: #c0bbcc;
+
+  --cyan: #e90029;
+  --cyan-dim: rgba(233, 0, 41, 0.08);
+  --cyan-glow: rgba(233, 0, 41, 0.18);
+  --cyan-hover: #ff1a3d;
+
+  --green: #00875a;
+  --green-dim: rgba(0, 135, 90, 0.1);
+  --green-border: rgba(0, 135, 90, 0.28);
+
+  --amber: #d4870a;
+  --amber-dim: rgba(212, 135, 10, 0.1);
+  --amber-border: rgba(212, 135, 10, 0.32);
+
+  --crimson: #b5001f;
+  --crimson-dim: rgba(181, 0, 31, 0.08);
+  --crimson-hover: #d4002a;
+
+  --toast-ok-text: #07858b;
+  --toast-error-text: #871518;
+
+  background-image:
+    radial-gradient(ellipse 80% 40% at 10% -10%, rgba(41, 27, 68, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 110%, rgba(233, 0, 41, 0.03) 0%, transparent 60%);
+}
+
+/* Pinned Keysight header — never theme-swapped */
+header.app-header {
+  background: #291b44;
+  border-bottom: 1px solid #3d2860;
+}
