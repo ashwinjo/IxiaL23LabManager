@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { BRIAN } from '../config/tools'
 import { sendBrianMessage } from '../lib/api'
 import './LabAssistantView.css'
@@ -111,7 +113,9 @@ export default function LabAssistantView({ mcpHealth, mcpServers = [], brianHeal
         {messages.map((msg, i) => (
           <div key={i} className={`brian-msg brian-msg-${msg.role}`}>
             <span className="brian-msg-label">{msg.role === 'user' ? 'You' : 'Brian'}</span>
-            <p>{msg.content}</p>
+            <div className="brian-msg-body">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+            </div>
           </div>
         ))}
         {sending && (
