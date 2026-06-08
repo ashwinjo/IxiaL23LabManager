@@ -28,10 +28,10 @@ export const TOOLS = [
     id: 't3',
     name: 'IxPortUtilizationAuditor',
     shortName: 'Port Util',
-    uiUrl: `http://${host}:8675`,
-    backendUrl: `http://${host}:8675`,
-    healthUrl: `http://${host}:8675/`,
-    popOutPort: 8675,
+    uiUrl: `http://${host}:8890`,
+    backendUrl: `http://${host}:8890`,
+    healthUrl: `http://${host}:8890/docs`,
+    popOutPort: 8890,
   },
 ]
 

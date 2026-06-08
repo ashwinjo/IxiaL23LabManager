@@ -20,7 +20,7 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 die()   { err "$*"; exit 1; }
 
-PORTS=(3000 3001 5174 8675 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")
+PORTS=(3000 3001 5174 8890 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")
 # PORTS=(3000 3001 5174 8675 3005 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")  # 3005 removed
 
 REPOS=(
@@ -178,15 +178,17 @@ start_t2() {
 start_t3() {
   local dir="${IXIA_TOOLS_DIR}/IxPortUtilizationAuditor"
   [[ -d "$dir" ]] || die "Missing ${dir}"
-  info "Starting IxPortUtilizationAuditor on port 8675..."
-  if curl -sf --max-time 2 "http://127.0.0.1:8675/" >/dev/null 2>&1; then
+  info "Starting IxPortUtilizationAuditor on port 8890..."
+  if curl -sf --max-time 2 "http://127.0.0.1:8890/docs" >/dev/null 2>&1; then
     ok "T3 already running"
     return 0
   fi
-  if [[ -f "${dir}/docker-compose.yml" ]]; then
+  if [[ -x "${dir}/start.sh" ]]; then
+    (cd "$dir" && ./start.sh)
+  elif [[ -f "${dir}/docker-compose.yml" ]]; then
     (cd "$dir" && $COMPOSE -f docker-compose.yml up -d --build 2>/dev/null) || true
   fi
-  wait_health "http://127.0.0.1:8675/" "T3" 120 || true
+  wait_health "http://127.0.0.1:8890/docs" "T3" 120 || true
 }
 
 start_t1_mcp() {
@@ -212,6 +214,13 @@ start_t1_mcp() {
 start_brian() {
   [[ -d "${LAB_ASSISTANT_DIR}" ]] || die "Missing ${LAB_ASSISTANT_DIR}"
   info "Starting Brian (LabAssistant) on port ${BRIAN_PORT}..."
+  local pid_file="${LAB_ASSISTANT_DIR}/.brian.pid"
+  if $UPDATE && [[ -f "$pid_file" ]]; then
+    info "Restarting Brian to pick up .env changes..."
+    kill "$(cat "$pid_file")" 2>/dev/null || true
+    rm -f "$pid_file"
+    sleep 1
+  fi
   if curl -sf --max-time 2 "http://127.0.0.1:${BRIAN_PORT}/health" >/dev/null 2>&1; then
     ok "Brian already healthy"
     return 0
@@ -286,8 +295,8 @@ main() {
   echo "    Backend:  http://localhost:8080"
   echo ""
   echo -e "${BOLD}  T3 — IxPortUtilizationAuditor${NC}"
-  echo "    UI:       http://localhost:8675"
-  echo "    Backend:  http://localhost:8675"
+  echo "    UI:       http://localhost:8890"
+  echo "    Backend:  http://localhost:8890"
   echo ""
   echo -e "${BOLD}  MCP — Inventory (T1)${NC}"
   echo "    MCP:      http://localhost:8888/mcp"
