@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { BRIAN } from '../config/tools'
@@ -45,10 +45,23 @@ function McpStatus({ health, servers }) {
 }
 
 export default function LabAssistantView({ mcpHealth, mcpServers = [], brianHealth }) {
-  const [messages, setMessages] = useState([WELCOME])
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('brian_messages')
+      return saved ? JSON.parse(saved) : [WELCOME]
+    } catch {
+      return [WELCOME]
+    }
+  })
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const listRef = useRef(null)
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('brian_messages', JSON.stringify(messages))
+    } catch {}
+  }, [messages])
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
