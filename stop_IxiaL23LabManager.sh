@@ -61,7 +61,7 @@ main() {
   stop_tool "${IXIA_TOOLS_DIR}/ixiaInventoryExplorer" "docker-compose.separate.yml"
   stop_tool "${IXIA_TOOLS_DIR}/IxNetworkSessionExplorer"
   stop_tool "${IXIA_TOOLS_DIR}/IxPortUtilizationAuditor"
-  stop_tool "${IXIA_TOOLS_DIR}/IxOSMonitoring"
+  stop_tool "${IXIA_TOOLS_DIR}/IxPortUtilizationPlotter"
   ok "Teardown complete"
 }
 

@@ -20,13 +20,13 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 err()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
 die()   { err "$*"; exit 1; }
 
-PORTS=(3000 3001 5174 8890 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")
-# PORTS=(3000 3001 5174 8675 3005 8080 8888 8889 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")  # 3005 removed
+PORTS=(3000 3001 5174 8890 8080 8888 8889 3005 "${BRIAN_PORT}" "${IXIA_SHELL_PORT}")
 
 REPOS=(
   "ixiaInventoryExplorer|https://github.com/ashwinjo/ixiaInventoryExplorer.git"
   "IxNetworkSessionExplorer|https://github.com/ashwinjo/IxNetworkSessionExplorer.git"
   "IxPortUtilizationAuditor|https://github.com/ashwinjo/IxPortUtilizationAuditor.git"
+  "IxPortUtilizationPlotter|https://github.com/ashwinjo/IxPortUtilizationPlotter.git"
   "ixia-inventory-management-mcp|https://github.com/ashwinjo/ixia-inventory-management-mcp.git"
   # "IxOSMonitoring|https://github.com/Keysight/IxOSMonitoring.git"
 )
@@ -230,26 +230,21 @@ start_brian() {
   wait_health "http://127.0.0.1:${BRIAN_PORT}/health" "Brian" 60 || true
 }
 
-# start_t4() {
-#   local dir="${IXIA_TOOLS_DIR}/IxOSMonitoring"
-#   [[ -d "$dir" ]] || die "Missing ${dir}"
-#   info "Starting IxOSMonitoring..."
-#   if curl -sf --max-time 2 "http://127.0.0.1:3005/api/health" >/dev/null 2>&1; then
-#     ok "T4 already healthy"
-#     return 0
-#   fi
-#   if [[ -x "${dir}/startup.sh" ]]; then
-#     (cd "$dir" && ./startup.sh) || true
-#   elif [[ -f "${dir}/start.sh" ]]; then
-#     (cd "$dir" && ./start.sh) || true
-#   elif [[ -f "${dir}/docker-compose.yml" ]]; then
-#     (cd "$dir" && $COMPOSE up -d) || true
-#   else
-#     warn "No startup script for IxOSMonitoring — start manually on port 3005"
-#     return 0
-#   fi
-#   wait_health "http://127.0.0.1:3005/api/health" "T4 Grafana" 180 || true
-# }
+start_t4() {
+  local dir="${IXIA_TOOLS_DIR}/IxPortUtilizationPlotter"
+  [[ -d "$dir" ]] || die "Missing ${dir}"
+  info "Starting IxPortUtilizationPlotter on port 3005..."
+  if curl -sf --max-time 2 "http://127.0.0.1:3005/api/health" >/dev/null 2>&1; then
+    ok "T4 already running"
+    return 0
+  fi
+  if [[ -x "${dir}/start.sh" ]]; then
+    (cd "$dir" && ./start.sh)
+  elif [[ -f "${dir}/docker-compose.yml" ]]; then
+    (cd "$dir" && $COMPOSE -f docker-compose.yml up -d --build 2>/dev/null) || true
+  fi
+  wait_health "http://127.0.0.1:3005/api/health" "T4" 180 || true
+}
 
 start_shell() {
   if [[ -f "${SHELL_PID_FILE}" ]] && kill -0 "$(cat "${SHELL_PID_FILE}")" 2>/dev/null; then
@@ -280,7 +275,7 @@ main() {
   start_t1_mcp
   start_t2
   start_t3
-  # start_t4
+  start_t4
   start_brian
   start_shell
   echo ""
@@ -298,6 +293,9 @@ main() {
   echo "    UI:       http://localhost:8890"
   echo "    Backend:  http://localhost:8890"
   echo ""
+  echo -e "${BOLD}  T4 — IxPortUtilizationPlotter${NC}"
+  echo "    UI:       http://localhost:3005"
+  echo ""
   echo -e "${BOLD}  MCP — Inventory (T1)${NC}"
   echo "    MCP:      http://localhost:8888/mcp"
   echo "    Health:   http://localhost:8888/docs"
@@ -310,9 +308,6 @@ main() {
   echo "    API:      http://localhost:${BRIAN_PORT}"
   echo "    Set OPENAI_API_KEY in lab-assistant/.env for chat"
   echo ""
-  # echo -e "${BOLD}  T4 — IxOSMonitoring${NC}"
-  # echo "    UI:       http://localhost:3005"
-  # echo "    Backend:  http://localhost:3005"
 }
 
 main "$@"
